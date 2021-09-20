@@ -2,6 +2,8 @@ plugins {
 	id 'org.springframework.boot' version '2.5.4'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id 'com.google.protobuf' version '0.8.17'
+	id 'idea'
 }
 
 group = 'br.com.bmo.grpctaskmanager'
@@ -19,6 +21,12 @@ repositories {
 }
 
 dependencies {
+	// gRPC
+	implementation 'io.grpc:grpc-netty-shaded:1.40.1'
+	implementation 'io.grpc:grpc-protobuf:1.40.1'
+	implementation 'io.grpc:grpc-stub:1.40.1'
+	compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // necessary for Java 9+
+
 	implementation 'org.springframework.boot:spring-boot-starter'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -28,4 +36,20 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:3.17.3"
+	}
+	plugins {
+		grpc {
+			artifact = 'io.grpc:protoc-gen-grpc-java:1.40.1'
+		}
+	}
+	generateProtoTasks {
+		all()*.plugins {
+			grpc {}
+		}
+	}
 }
