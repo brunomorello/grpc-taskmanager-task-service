@@ -1,9 +1,6 @@
 package br.com.bmo.grpctaskmanager.server;
 
-import br.com.bmo.proto.greet.GreetRequest;
-import br.com.bmo.proto.greet.GreetResponse;
-import br.com.bmo.proto.greet.GreetServiceGrpc;
-import br.com.bmo.proto.greet.Greeting;
+import br.com.bmo.proto.greet.*;
 import io.grpc.stub.StreamObserver;
 
 public class GreetingServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
@@ -21,6 +18,26 @@ public class GreetingServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-        //        super.greet(request, responseObserver);
+    }
+
+    @Override
+    public void greetManyTimes(GreetManyTimesRequest request, StreamObserver<GreetManyTimesResponse> responseObserver) {
+        String firstName = request.getGreeting().getFirstName();
+
+        try {
+            for (int i = 0; i < 10; i++) {
+                String result = "Hello " + firstName + ". Response Number=" + i;
+                GreetManyTimesResponse response = GreetManyTimesResponse.newBuilder()
+                        .setResult(result)
+                        .build();
+                responseObserver.onNext(response);
+                Thread.sleep(1000L);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            responseObserver.onCompleted();
+        }
+
     }
 }
