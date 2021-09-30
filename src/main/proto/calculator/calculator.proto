@@ -9,10 +9,21 @@ message SumRequest {
   int32 second_number = 2;
 }
 
+message PrimerNumberDecompositionRequest {
+  int32 number = 1;
+}
+
 message SumResponse {
   int32 sum_result = 1;
 }
 
+message PrimeNumberDecompositionResponse {
+  int32 prime_factor = 1;
+}
+
 service CalculatorService {
   rpc Sum(SumRequest) returns (SumResponse) {};
+
+  rpc PrimeNumberDecomposition(PrimerNumberDecompositionRequest)
+      returns (stream PrimeNumberDecompositionResponse) {};
 }
