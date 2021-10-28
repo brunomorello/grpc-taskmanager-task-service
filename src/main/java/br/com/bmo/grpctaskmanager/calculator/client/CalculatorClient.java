@@ -7,6 +7,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +24,8 @@ public class CalculatorClient {
 
 //        doUnaryCall(channel);
 //        doServerStreammingCall(channel);
-        doClientStreammingCall(channel);
+//        doClientStreammingCall(channel);
+        doBiDiSreammingCall(channel);
         channel.shutdown();
     }
 
@@ -85,6 +87,51 @@ public class CalculatorClient {
 
         try {
             latch.await(10L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void doBiDiSreammingCall(Channel channel) {
+        CalculatorServiceGrpc.CalculatorServiceStub asyncClient = CalculatorServiceGrpc.newStub(channel);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        StreamObserver<FindMaximumRequest> requestStreamObserver = asyncClient.findMaximum(new StreamObserver<FindMaximumResponse>() {
+            @Override
+            public void onNext(FindMaximumResponse findMaximumResponse) {
+                System.out.println("got new maximum from the server" + findMaximumResponse.getMaximum());
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("server is done sending messages");
+            }
+        });
+
+        // List of random numbers
+        Arrays.asList(3, 5, 17, 9, 8, 30, 12).forEach(number -> {
+            System.out.println("sending number " + number);
+            requestStreamObserver.onNext(FindMaximumRequest.newBuilder()
+                    .setNumber(number)
+                    .build()
+            );
+
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        requestStreamObserver.onCompleted();
+
+        try {
+            latch.await(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
