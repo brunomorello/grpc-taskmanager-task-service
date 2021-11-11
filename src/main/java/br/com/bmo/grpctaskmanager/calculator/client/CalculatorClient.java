@@ -5,6 +5,7 @@ import br.com.bmo.proto.greet.Greeting;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 
 import java.util.Arrays;
@@ -25,7 +26,8 @@ public class CalculatorClient {
 //        doUnaryCall(channel);
 //        doServerStreammingCall(channel);
 //        doClientStreammingCall(channel);
-        doBiDiSreammingCall(channel);
+//        doBiDiSreammingCall(channel);
+        doErrorCall(channel);
         channel.shutdown();
     }
 
@@ -135,5 +137,21 @@ public class CalculatorClient {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private void doErrorCall(ManagedChannel channel) {
+        CalculatorServiceGrpc.CalculatorServiceBlockingStub blockingStub = CalculatorServiceGrpc.newBlockingStub(channel);
+
+        int number = -1;
+
+        try {
+            blockingStub.squareRoot(SquareRootRequest.newBuilder()
+                    .setNumber(number)
+                    .build());
+        } catch (StatusRuntimeException e) {
+            System.out.println("Got an exception for square root!");
+            e.printStackTrace();
+        }
+
     }
 }
