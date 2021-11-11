@@ -2,8 +2,7 @@ package br.com.bmo.grpctaskmanager.client;
 
 import br.com.bmo.proto.dummy.DummyServiceGrpc;
 import br.com.bmo.proto.greet.*;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
 import java.util.Arrays;
@@ -27,8 +26,9 @@ public class TaskManagerClient {
 //        doUnaryCall(channel);
 //        doServerStreamingCall(channel);
 //        doClientStreamingCall(channel);
-        doBiDiStreamingCall(channel);
-        
+//        doBiDiStreamingCall(channel);
+        doUnaryCallWithDeadline(channel);
+
         System.out.println("shutting down channel");
         channel.shutdown();
     }
@@ -177,5 +177,51 @@ public class TaskManagerClient {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private void doUnaryCallWithDeadline(ManagedChannel channel) {
+
+        System.out.println("creating stub");
+        GreetServiceGrpc.GreetServiceBlockingStub syncClient = GreetServiceGrpc.newBlockingStub(channel);
+
+        Greeting request = Greeting.newBuilder()
+                .setFirstName("Bruno")
+                .setLastName("Moreno")
+                .build();
+
+        //first call (3000ms deadline)
+        try {
+            System.out.println("sending a request with a deadline of 3000ms");
+            GreetWithDeadlineResponse response = syncClient.withDeadline(Deadline.after(5000, TimeUnit.MILLISECONDS))
+                    .greetWithDeadline(
+                    GreetWithDeadlineRequest.newBuilder()
+                            .setGreeting(request)
+                            .build());
+            System.out.println(response.getResult());
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
+                System.out.println("Deadline has been exceeded, we don't want the response");
+            } else {
+                e.printStackTrace();
+            }
+        }
+
+        //first call (100ms deadline)
+        try {
+            System.out.println("sending a request with a deadline of 100ms");
+            GreetWithDeadlineResponse response = syncClient.withDeadline(Deadline.after(100, TimeUnit.MILLISECONDS))
+                    .greetWithDeadline(
+                            GreetWithDeadlineRequest.newBuilder()
+                                    .setGreeting(request)
+                                    .build());
+            System.out.println(response.getResult());
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
+                System.out.println("Deadline has been exceeded, we don't want the response");
+            } else {
+                e.printStackTrace();
+            }
+        }
+
     }
 }

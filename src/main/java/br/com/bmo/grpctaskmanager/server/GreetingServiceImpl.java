@@ -1,6 +1,7 @@
 package br.com.bmo.grpctaskmanager.server;
 
 import br.com.bmo.proto.greet.*;
+import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
 public class GreetingServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
@@ -94,6 +95,35 @@ public class GreetingServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
         };
 
         return requestObserver;
+    }
+
+    @Override
+    public void greetWithDeadline(GreetWithDeadlineRequest request, StreamObserver<GreetWithDeadlineResponse> responseObserver) {
+
+        Context current = Context.current();
+
+        try {
+            for (int i = 0; i < 3; i++) {
+                if (!current.isCancelled()) {
+                    System.out.println("sleep for 100ms");
+                    Thread.sleep(100);
+                } else {
+                    return;
+                }
+            }
+
+            System.out.println("send response");
+            responseObserver.onNext(
+                    GreetWithDeadlineResponse.newBuilder()
+                            .setResult("hello " + request.getGreeting().getFirstName())
+                            .build()
+            );
+
+            responseObserver.onCompleted();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 }
 
