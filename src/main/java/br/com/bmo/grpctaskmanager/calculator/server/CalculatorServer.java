@@ -2,6 +2,7 @@ package br.com.bmo.grpctaskmanager.calculator.server;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.protobuf.services.ProtoReflectionService;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +17,8 @@ public class CalculatorServer {
 
         Server server = ServerBuilder.forPort(50052)
                         .addService(new CalculatorServiceImpl())
+                        .addService(ProtoReflectionService.newInstance())
+                // evans CLI - https://github.com/ktr0731/evans#macos
                         .useTransportSecurity(
                                 new File("ssl/server.crt"),
                                 new File("ssl/server.pem")
