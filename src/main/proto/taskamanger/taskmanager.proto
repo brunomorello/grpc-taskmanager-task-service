@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package taskamanger;
+
+option java_package = "br.com.bmo.proto.taskamanager";
+option java_multiple_files = true;
+
+message Task {
+  string id = 1;
+  string description = 2;
+  string details = 3;
+  string status = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+service TaskManagerService {
+
+}
