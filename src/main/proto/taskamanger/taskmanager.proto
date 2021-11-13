@@ -22,6 +22,15 @@ message CreateTaskResponse {
   Task task = 1;
 }
 
+message ReadTaskRequest {
+  string task_id = 1;
+}
+
+message ReadTaskResponse {
+  Task task = 1;
+}
+
 service TaskManagerService {
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse) {};
+  rpc ReadTask(ReadTaskRequest) returns (ReadTaskResponse) {};
 }

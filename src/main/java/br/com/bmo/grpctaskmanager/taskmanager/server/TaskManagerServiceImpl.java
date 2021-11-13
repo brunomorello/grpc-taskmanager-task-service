@@ -1,15 +1,18 @@
 package br.com.bmo.grpctaskmanager.taskmanager.server;
 
-import br.com.bmo.proto.taskamanager.CreateTaskRequest;
-import br.com.bmo.proto.taskamanager.CreateTaskResponse;
-import br.com.bmo.proto.taskamanager.Task;
-import br.com.bmo.proto.taskamanager.TaskManagerServiceGrpc;
+import br.com.bmo.proto.taskamanager.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
+import org.bson.types.ObjectId;
+
+import java.util.Optional;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class TaskManagerServiceImpl extends TaskManagerServiceGrpc.TaskManagerServiceImplBase {
 
@@ -43,5 +46,37 @@ public class TaskManagerServiceImpl extends TaskManagerServiceGrpc.TaskManagerSe
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void readTask(ReadTaskRequest request, StreamObserver<ReadTaskResponse> responseObserver) {
+        String taskId = request.getTaskId();
+
+        Optional<Document> result = Optional.ofNullable(collection.find(eq("_id", new ObjectId(taskId))).first());
+
+        if (result.isEmpty()) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("Task with the corresponding id " + taskId + " was not found")
+                            .asRuntimeException()
+            );
+        } else {
+            Task task = Task.newBuilder()
+                    .setDescription(result.get().getString("description"))
+                    .setDetails(result.get().getString("details"))
+                    .setStatus(result.get().getString("status"))
+                    .setCreatedAt(result.get().getString("created_at"))
+                    .setUpdatedAt(result.get().getString("updated_at"))
+                    .setId(taskId)
+                    .build();
+
+            responseObserver.onNext(
+                    ReadTaskResponse.newBuilder()
+                            .setTask(task)
+                            .build()
+            );
+            responseObserver.onCompleted();
+        }
+
     }
 }
