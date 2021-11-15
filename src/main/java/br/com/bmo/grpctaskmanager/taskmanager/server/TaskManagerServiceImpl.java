@@ -10,6 +10,8 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -61,14 +63,7 @@ public class TaskManagerServiceImpl extends TaskManagerServiceGrpc.TaskManagerSe
                             .asRuntimeException()
             );
         } else {
-            Task task = Task.newBuilder()
-                    .setDescription(result.get().getString("description"))
-                    .setDetails(result.get().getString("details"))
-                    .setStatus(result.get().getString("status"))
-                    .setCreatedAt(result.get().getString("created_at"))
-                    .setUpdatedAt(result.get().getString("updated_at"))
-                    .setId(taskId)
-                    .build();
+            Task task = parseDocToTask(result.get());
 
             responseObserver.onNext(
                     ReadTaskResponse.newBuilder()
@@ -78,5 +73,64 @@ public class TaskManagerServiceImpl extends TaskManagerServiceGrpc.TaskManagerSe
             responseObserver.onCompleted();
         }
 
+    }
+
+    @Override
+    public void updateTask(UpdateTaskRequest request, StreamObserver<UpdateTaskResponse> responseObserver) {
+
+        Task task = request.getTask();
+
+        Document result = null;
+
+        try {
+            result = collection.find(eq("_id", new ObjectId(task.getId()))).first();
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("Task with the corresponding id was not found. Id = " + task.getId())
+                            .augmentDescription(e.getLocalizedMessage())
+                            .asRuntimeException()
+            );
+        }
+
+        if (result != null) {
+            Document updatedTask = new Document()
+                    .append("_id", new ObjectId(task.getId()))
+                    .append("description", task.getDescription())
+                    .append("details", task.getDetails())
+                    .append("status", task.getStatus())
+                    .append("created_at", task.getCreatedAt())
+                    .append("updated_at", LocalDateTime.now().toString());
+
+            System.out.println("Updating Task...");
+
+            collection.replaceOne(eq("_id", result.getObjectId("_id")), updatedTask);
+
+            System.out.println("Task updated!");
+            System.out.println(updatedTask.toString());
+            responseObserver.onNext(
+                    UpdateTaskResponse.newBuilder()
+                            .setTask(parseDocToTask(updatedTask))
+                            .build()
+            );
+            responseObserver.onCompleted();
+        } else {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("Task with the corresponding id was not found. Id = " + task.getId())
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    private Task parseDocToTask(Document result) {
+        return Task.newBuilder()
+                .setDescription(result.getString("description"))
+                .setDetails(result.getString("details"))
+                .setStatus(result.getString("status"))
+                .setCreatedAt(result.getString("created_at"))
+                .setUpdatedAt(result.getString("updated_at"))
+                .setId(result.getObjectId("_id").toString())
+                .build();
     }
 }

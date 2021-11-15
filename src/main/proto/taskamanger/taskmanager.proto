@@ -30,7 +30,16 @@ message ReadTaskResponse {
   Task task = 1;
 }
 
+message UpdateTaskRequest {
+  Task task = 1;
+}
+
+message UpdateTaskResponse {
+  Task task = 1;
+}
+
 service TaskManagerService {
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse) {};
   rpc ReadTask(ReadTaskRequest) returns (ReadTaskResponse) {};
+  rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse) {};
 }
