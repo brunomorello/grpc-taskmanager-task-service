@@ -38,8 +38,17 @@ message UpdateTaskResponse {
   Task task = 1;
 }
 
+message DeleteTaskRequest {
+  string task_id = 1;
+}
+
+message DeleteTaskResponse {
+  string task_id = 1;
+}
+
 service TaskManagerService {
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse) {};
   rpc ReadTask(ReadTaskRequest) returns (ReadTaskResponse) {};
   rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse) {};
+  rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse) {};
 }
