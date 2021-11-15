@@ -20,8 +20,15 @@ public class TaskManagerClient {
 
         TaskManagerServiceGrpc.TaskManagerServiceBlockingStub client = TaskManagerServiceGrpc.newBlockingStub(channel);
 
-        createTask(client);
+//        createTask(client);
 //        updateTask(client);
+        listTasks(client);
+    }
+
+    private void listTasks(TaskManagerServiceGrpc.TaskManagerServiceBlockingStub client) {
+        client.listTasks(
+                ListTasksRequest.newBuilder().build()
+        ).forEachRemaining(listTasksResponse -> System.out.println(listTasksResponse.getTask().toString()));
     }
 
     private void createTask(TaskManagerServiceGrpc.TaskManagerServiceBlockingStub client) {

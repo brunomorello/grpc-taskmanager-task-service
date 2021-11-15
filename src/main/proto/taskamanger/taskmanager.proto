@@ -46,9 +46,18 @@ message DeleteTaskResponse {
   string task_id = 1;
 }
 
+message ListTasksRequest {
+
+}
+
+message ListTasksResponse {
+  Task task = 1;
+}
+
 service TaskManagerService {
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse) {};
   rpc ReadTask(ReadTaskRequest) returns (ReadTaskResponse) {};
   rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse) {};
   rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse) {};
+  rpc ListTasks(ListTasksRequest) returns (stream ListTasksResponse) {};
 }

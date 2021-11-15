@@ -160,6 +160,21 @@ public class TaskManagerServiceImpl extends TaskManagerServiceGrpc.TaskManagerSe
         }
     }
 
+    @Override
+    public void listTasks(ListTasksRequest request, StreamObserver<ListTasksResponse> responseObserver) {
+        System.out.println("Received List Tasks Request");
+
+        collection.find().iterator().forEachRemaining(
+                document -> responseObserver.onNext(
+                        ListTasksResponse.newBuilder()
+                                .setTask(parseDocToTask(document))
+                                .build()
+                )
+        );
+
+        responseObserver.onCompleted();
+    }
+
     private Task parseDocToTask(Document result) {
         return Task.newBuilder()
                 .setDescription(result.getString("description"))
