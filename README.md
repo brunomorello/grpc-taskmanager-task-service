@@ -29,4 +29,4 @@
 >   TaskManagerServer
 >   TaskManagerServiceImpl
 
-Check git logs on branch feature/task-crud-with-mongodb
+Check git logs on branch feature/task-crud-with-mongodb.
